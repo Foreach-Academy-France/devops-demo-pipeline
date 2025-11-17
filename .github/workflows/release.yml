@@ -1,0 +1,45 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Trigger on version tags (v1.0.0, v2.1.3, etc.)
+
+permissions:
+  contents: write  # Required to create releases
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for release notes
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run tests
+        run: bun test
+
+      - name: Build project
+        run: bun run build
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            dist/**/*
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+
+      - name: Publish Release
+        run: |
+          echo "✅ Release ${{ github.ref_name }} published successfully!"
+          echo "Download artifacts from GitHub Releases page"
